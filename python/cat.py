@@ -212,6 +212,7 @@ class CAT:
 				pass
 			except Exception:
 				pass
+		print (self.__ports)
 		return self.__ports
 	
 """
