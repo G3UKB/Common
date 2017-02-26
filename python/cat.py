@@ -113,6 +113,7 @@ class CAT:
 			# Serial transport
 			# Open the serial port
 			try:
+				print(self.__com)
 				self.__device = serial.Serial(port=self.__com, baudrate=self.__baud, parity=self.__command_set[SERIAL][PARITY], stopbits=self.__command_set[SERIAL][STOP_BITS], timeout=self.__command_set[SERIAL][TIMEOUT])
 				self.__port_open = True
 			except (OSError, serial.SerialException):
