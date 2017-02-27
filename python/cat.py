@@ -118,6 +118,7 @@ class CAT:
 				self.__port_open = True
 			except (OSError, serial.SerialException):
 				# Failed to open the port, radio device probably off
+				print('Failed to open COM port %s for CAT! Available ports are %s' % (self.__com, self.__list_serial_ports()))
 				pass
 		
 		if (self.__transport == CAT_SERIAL and self.__port_open) or self.__transport == CAT_UDP:	
