@@ -317,7 +317,6 @@ class CATThrd (threading.Thread):
 						elif self.__transport == CAT_SERIAL:
 							# We do not assume a response on Serial
 							self.__device.write(cmd_buf)
-							print('Wrote: ', cmd_buf)
 							if self.__cat_cls_inst.is_response(cmd):
 								if self.__command_set[CLASS] == ICOM:
 									data = bytearray(30)
@@ -350,7 +349,6 @@ class CATThrd (threading.Thread):
 									if ch == b'\xfd':
 										break
 									n += 1
-								print('Received: ', data)
 								response = self.__cat_cls_inst.ack_nak(CAT_COMMAND_SETS[self.__variant], data)
 								if self.__callback != None: self.__callback(response)
 				sleep(0.1)
