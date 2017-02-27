@@ -116,7 +116,7 @@ class CAT:
 				# Comment
 				self.__device = serial.Serial(port=self.__com, baudrate=self.__baud, parity=self.__command_set[SERIAL][PARITY], stopbits=self.__command_set[SERIAL][STOP_BITS], timeout=self.__command_set[SERIAL][TIMEOUT])
 				self.__port_open = True
-				print('Opened COM port %s' % (self.__com))
+				print('Opened COM port for CAT %s' % (self.__com))
 			except (OSError, serial.SerialException):
 				# Failed to open the port, radio device probably off
 				print('Failed to open COM port %s for CAT! Available ports are %s' % (self.__com, self.__list_serial_ports()))
