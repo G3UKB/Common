@@ -116,6 +116,7 @@ class CAT:
 				# Comment
 				self.__device = serial.Serial(port=self.__com, baudrate=self.__baud, parity=self.__command_set[SERIAL][PARITY], stopbits=self.__command_set[SERIAL][STOP_BITS], timeout=self.__command_set[SERIAL][TIMEOUT])
 				self.__port_open = True
+				print('Opened COM port %s' % (self.__com))
 			except (OSError, serial.SerialException):
 				# Failed to open the port, radio device probably off
 				print('Failed to open COM port %s for CAT! Available ports are %s' % (self.__com, self.__list_serial_ports()))
@@ -947,20 +948,20 @@ CAT_COMMAND_SETS = {
 #======================================================================================================================
 # Testing code
 
-settings = {
-	CAT_SETTINGS: {
-		VARIANT: CAT_VARIANTS[0],
-		NETWORK: [
-			# ip, port
-			None, None
-		],
-		SERIAL: [
-			#com port, baud rate
-			'COM9', 4800
-		],
-		SELECT: CAT_SERIAL #CAT_UDP | CAT_SERIAL
-	}
+
+CAT_SETTINGS = {
+	VARIANT: CAT_VARIANTS[0],
+	NETWORK: [
+		# ip, port
+		None, None
+	],
+	SERIAL: [
+		#com port, baud rate
+		'COM9', 4800
+	],
+	SELECT: CAT_SERIAL #CAT_UDP | CAT_SERIAL
 }
+
 	
 def callback(msg):
 	
@@ -970,17 +971,17 @@ def main():
 	
 	try:
 		# Create instance
-		cat = CAT(FT_817ND, settings)
+		cat = CAT(IC7100, CAT_SETTINGS)
 		cat.set_callback(callback)
 		cat.start_thrd()
 		cat.do_command(CAT_FREQ_SET, 3.7)
 		sleep(1)
-		cat.do_command(CAT_FREQ_GET)
-		sleep(1)
-		cat.do_command(CAT_MODE_SET, MODE_AM)
-		sleep(1)
-		cat.do_command(CAT_MODE_GET)
-		sleep(1)
+		#cat.do_command(CAT_FREQ_GET)
+		#sleep(1)
+		#cat.do_command(CAT_MODE_SET, MODE_AM)
+		#sleep(1)
+		#cat.do_command(CAT_MODE_GET)
+		#sleep(1)
 		#cat.do_command(CAT_LOCK, False)
 		#sleep(1)
 		#cat.do_command(CAT_PTT, True)
