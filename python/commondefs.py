@@ -29,6 +29,16 @@
 RELAY_OFF = 'relayoff'
 RELAY_ON = 'relayon'
 
+# Loop Controller ==========
+# Buffer size
+RECEIVE_BUFFER = 512
+# Timeout for responses
+CONTROLLER_TIMEOUT = 20
+# Timeout for responses and events
+CONTROLLER_TIMEOUT = 1
+# Arduino event port on which we listen
+EVENT_PORT = 8889
+
 # ============================================================================
 # CAT
 
