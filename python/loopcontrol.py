@@ -38,7 +38,7 @@ from commondefs import *
 Controller API
 The one and only interface to the hardware
 """
-class ControllerAPI:
+class LoopControl:
     
     def __init__(self, networkParams, respCallback, evntCallback):
         """
@@ -558,7 +558,7 @@ def callback2(msg):
 def main():
     
     try:
-        api = ControllerAPI(('192.168.1.177', 8888), callback1, callback2)
+        api = LoopControl(('192.168.1.177', 8888), callback1, callback2)
         if api.is_online():
             api.setLowSetpoint(50)
             sleep(1)
