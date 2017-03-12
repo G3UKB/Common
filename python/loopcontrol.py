@@ -278,7 +278,7 @@ class LoopControl:
     
     def setCapMaxSetpoint(self, degrees, sync=True, response=True):
         """
-        Set the degrees offset for max capacitance
+        Set the analog value of the pot for max capacitance
         
         Arguments:
             degrees     --  degrees offset for maximum capacity
@@ -294,7 +294,7 @@ class LoopControl:
             
     def setCapMinSetpoint(self, degrees, sync=True, response=True):
         """
-        Set the degrees offset for min capacitance
+        Set the analog value of the pot for min capacitance
         
         Arguments:
             degrees     --  degrees offset for minimum capacity
