@@ -369,6 +369,7 @@ class ControllerAPI:
             state   --  1 = energise
         """
         
+        print('setRelay ', args)
         if not self.__online:
             self.__respCallback('offline!')
             return
