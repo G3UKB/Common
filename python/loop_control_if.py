@@ -276,6 +276,7 @@ class ControllerAPI:
             extension     --  extension % to low frequency setpoint
         """
         
+        print('setLowSetpoint ', extension)
         if not self.__online:
             self.__respCallback('offline!')
             return
@@ -292,6 +293,7 @@ class ControllerAPI:
             extension     --  extension % to high frequency setpoint
         """
         
+        print('setHighSetpoint ', extension)
         if not self.__online:
             self.__respCallback('offline!')
             return
@@ -308,6 +310,7 @@ class ControllerAPI:
             extension     --  extension % for maximum capacity
         """
 
+        print('setCapMaxSetpoint ', extension)
         if not self.__online:
             self.__respCallback('offline!')
             return
@@ -324,6 +327,7 @@ class ControllerAPI:
             extension     --  extension % for minimum capacity
         """
         
+        print('setCapMinSetpoint ', extension)
         if not self.__online:
             self.__respCallback('offline!')
             return
