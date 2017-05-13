@@ -58,11 +58,13 @@ class ControllerAPI:
             self.__ip = None
             self.__port = None
             self.__ready = False
+            print('Not ready ', networkParams)
         else:
             # Ready to roll
             self.__ip = networkParams[0]
             self.__port = int(networkParams[1])
             self.__ready = True
+            print('Ready ', networkParams)
             
         # Callback parameters
         self.__originalRespCallback = respCallback
@@ -78,6 +80,9 @@ class ControllerAPI:
             # Check connectivity
             if self.__ping():
                 self.__online = True
+                print('Online')
+            else:
+                print('Offline')
                 
         # Create and start the event thread
         self.__evntThrd = EventThread(self.__evntCallback)
@@ -180,6 +185,7 @@ class ControllerAPI:
     def setAnalogRef(self, args, sync=True, response=True):
         """ Set analog ref to INTERNAL or EXTERNAL """
         
+        print('setAnalogRef ', args)
         if not self.__online:
             self.__respCallback('offline!')
             return
@@ -210,6 +216,7 @@ class ControllerAPI:
             value   --  speed value
         """
         
+        print('Speed ', value)
         if not self.__online:
             self.__respCallback('offline!')
             return
@@ -236,6 +243,7 @@ class ControllerAPI:
             extension     --  extension % to move to
         """
        
+        print('Move ', extension)
         if not self.__online:
             self.__respCallback('offline!')
             return
