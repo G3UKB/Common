@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 #
-# loopcontrol.py
+# loop_control_if.py
 #
 # Controller API for the Loop Controller application
+# Slightly adapted for the WSPR controller to use
 # 
 # Copyright (C) 2016 by G3UKB Bob Cowdery
 # This program is free software; you can redistribute it and/or modify
@@ -38,7 +39,7 @@ from commondefs import *
 Controller API
 The one and only interface to the hardware
 """
-class LoopControl:
+class ControllerAPI:
     
     def __init__(self, networkParams, respCallback, evntCallback):
         """
@@ -176,6 +177,21 @@ class LoopControl:
         else:
             return False
     
+    def setAnalogRef(self, args, sync=True, response=True):
+        """ Set analog ref to INTERNAL or EXTERNAL """
+        
+        if not self.__online:
+            self.__respCallback('offline!')
+            return
+        
+        if args == EXTERNAL:
+            self.__send('refexternal')
+        else:
+            self.__send('refdefault')
+            
+        if response:
+            self.__doReceive(sync)        
+        
     def is_tx(self, args, sync=True, response=True):
         """ If TX return True """
         
@@ -212,99 +228,99 @@ class LoopControl:
         if response:
             self.__doReceive(sync)
     
-    def move(self, degrees, sync=True, response=True):        
+    def move(self, extension, sync=True, response=True):        
         """
-        Move to the given degrees value (heading)
+        Move to the given extension value
         
         Arguments:
-            degrees     --  degrees to move to
+            extension     --  extension % to move to
         """
-        
+       
         if not self.__online:
             self.__respCallback('offline!')
             return
         
-        self.__send(str(degrees) + 'm')
+        self.__send(str(extension) + 'm')
         if response:
             self.__doReceive(sync)
     
-    def nudge(self, degrees, sync=True, response=True):        
+    def nudge(self, extension, sync=True, response=True):        
         """
-        Move to the given relative degrees value (heading)
+        Move to the given relative extension value
         
         Arguments:
-            degrees     --  degrees relative to move to
+            extension     --  extension % relative to move to
         """
         
         if not self.__online:
             self.__respCallback('offline!')
             return
         
-        self.__send(str(degrees) + 'n')
+        self.__send(str(extension) + 'n')
         if response:
             self.__doReceive(sync)
 
-    def setLowSetpoint(self, degrees, sync=True, response=True):
+    def setLowSetpoint(self, extension, sync=True, response=True):
         """
         Set the low setpoint
         
         Arguments:
-            degrees     --  degrees offset to low frequency setpoint
+            extension     --  extension % to low frequency setpoint
         """
         
         if not self.__online:
             self.__respCallback('offline!')
             return
         
-        self.__send(str(degrees) + 'l')
+        self.__send(str(extension) + 'l')
         if response:
             self.__doReceive(sync)
     
-    def setHighSetpoint(self, degrees, sync=True, response=True):
+    def setHighSetpoint(self, extension, sync=True, response=True):
         """
         Set the high setpoint
         
         Arguments:
-            degrees     --  degrees offset to high frequency setpoint
+            extension     --  extension % to high frequency setpoint
         """
         
         if not self.__online:
             self.__respCallback('offline!')
             return
         
-        self.__send(str(degrees) + 'h')
+        self.__send(str(extension) + 'h')
         if response:
             self.__doReceive(sync)
     
-    def setCapMaxSetpoint(self, degrees, sync=True, response=True):
+    def setCapMaxSetpoint(self, extension, sync=True, response=True):
         """
-        Set the analog value of the pot for max capacitance
+        Set the extension % for max capacitance
         
         Arguments:
-            degrees     --  degrees offset for maximum capacity
+            extension     --  extension % for maximum capacity
         """
 
         if not self.__online:
             self.__respCallback('offline!')
             return
         
-        self.__send(str(degrees) + 'x')
+        self.__send(str(extension) + 'x')
         if response:
             self.__doReceive(sync)
             
-    def setCapMinSetpoint(self, degrees, sync=True, response=True):
+    def setCapMinSetpoint(self, extension, sync=True, response=True):
         """
-        Set the analog value of the pot for min capacitance
+        Set the extension % for min capacitance
         
         Arguments:
-            degrees     --  degrees offset for minimum capacity
+            extension     --  extension % for minimum capacity
         """
         
         if not self.__online:
             self.__respCallback('offline!')
             return
         
-        self.__send(str(degrees) + 'y')
+        self.__send(str(extension) + 'y')
         if response:
             self.__doReceive(sync)
             
@@ -354,41 +370,6 @@ class LoopControl:
             self.__send(str(relay) + 'd')
             if response:
                 self.__doReceive(sync)
-    
-    def setSource(self, args, sync=True, response=True):
-        """
-        Set the signal source
-        
-        Arguments:
-            source   --  PI_WSPR | MAIN_RADIO
-            
-        """
-        
-        if not self.__online:
-            self.__respCallback('offline!')
-            return
-        
-        source = args
-        if source == PI_WSPR:
-            self.__send('source1')
-            if response:
-                self.__doReceive(sync)
-        else:
-            self.__send('source2')
-            if response:
-                self.__doReceive(sync)
-    
-    def setDeclination(self, degrees, sync=True, response=True):
-        """
-        Set the current magnetic declination
-        Note: done at start of day only
-        
-        Arguments:
-            degrees     --  degrees offset from magnetic north
-        """
-        
-        # Not used but could be in the future
-        pass
             
     # Helpers =========================================================================================================    
     def __send(self, command):
@@ -558,7 +539,7 @@ def callback2(msg):
 def main():
     
     try:
-        api = LoopControl(('192.168.1.177', 8888), callback1, callback2)
+        api = ControllerAPI(('192.168.1.177', 8888), callback1, callback2)
         if api.is_online():
             api.setLowSetpoint(50)
             sleep(1)

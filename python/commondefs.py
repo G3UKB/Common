@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 #
-# defs.py
+# commondefs.py
 #
-# CAT control for the Mag Loop application
+# Common defs for the loop control, antenna control and CAT for use by WSPRController
 # 
-# Copyright (C) 2015 by G3UKB Bob Cowdery
+# Copyright (C) 2017 by G3UKB Bob Cowdery
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -38,6 +38,9 @@ CONTROLLER_TIMEOUT = 20
 CONTROLLER_TIMEOUT = 1
 # Arduino event port on which we listen
 EVENT_PORT = 8889
+# Select analog reference
+INTERNAL = 'internal'
+EXTERNAL = 'external'
 
 # ============================================================================
 # CAT
