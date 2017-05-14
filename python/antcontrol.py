@@ -73,8 +73,7 @@ class AntControl :
                 self.__online = True
                 # Set the relays according to the state
                 if self.__relay_state != None:
-                    for relay_id, state in self.__relay_state.items():
-                        self.set_relay(relay_id, state)
+                    self.__init_relays()
 
     # API =============================================================================================================           
     def resetParams(self, ip, port, relay_state = None):
@@ -147,8 +146,7 @@ class AntControl :
                     self.__online = True
                     if relay_state != None:
                         self.__relay_state = relay_state
-                        for relay_id, state in self.__relay_state.items():
-                            self.set_relay(relay_id, state)
+                        self.__init_relays()
                     return True
                 else:
                     return False        
@@ -156,6 +154,37 @@ class AntControl :
             return False
         
     # Helpers =========================================================================================================    
+    def __init_relays(self):
+       
+       for relay_id, state in self.__relay_state.items():
+            if state == RELAY_ON:
+                self.__send(str(relay_id) + 'e')
+            else:
+                self.__send(str(relay_id) + 'd')
+            try:
+                sock.settimeout(5)
+                success = False
+                while(1):
+                    data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
+                    asciidata = data.decode(encoding='UTF-8')
+                    if 'success' in asciidata:
+                        # Continue with next relay
+                        success = True
+                        break
+                    elif 'failure' in asciidata:
+                        #oops
+                        callback('failure: initialise relays reported failure!')
+                        break
+                if success: continue    
+            except socket.timeout:
+                # Server didn't respond
+                callback('failure: initialise relays reported timeout on read!')
+                break
+            except Exception as e:
+                # Something went wrong
+                callback('failure: initialise relays reported exception {0}'.format(e))
+                break
+        
     def __send(self, command):
         
         if self.__online:
