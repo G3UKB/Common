@@ -198,7 +198,7 @@ def receive(sock, callback, online):
         if not online:
             callback('offline: controller is not responding')
             return
-        callback('Communicating with controller...')
+        #callback('Communicating with controller...')
         sock.settimeout(5)
         while(1):
             data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes

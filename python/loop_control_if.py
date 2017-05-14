@@ -58,13 +58,11 @@ class ControllerAPI:
             self.__ip = None
             self.__port = None
             self.__ready = False
-            print('Loop interface failed initialise! ', networkParams)
         else:
             # Ready to roll
             self.__ip = networkParams[0]
             self.__port = int(networkParams[1])
             self.__ready = True
-            print('Loop interface ready...')
             
         # Callback parameters
         self.__originalRespCallback = respCallback
