@@ -173,16 +173,16 @@ class AntControl :
                         break
                     elif 'failure' in asciidata:
                         #oops
-                        callback('failure: initialise relays reported failure!')
+                        self.__callback('failure: initialise relays reported failure!')
                         break
                 if success: continue    
             except socket.timeout:
                 # Server didn't respond
-                callback('failure: initialise relays reported timeout on read!')
+                self.__callback('failure: initialise relays reported timeout on read!')
                 break
             except Exception as e:
                 # Something went wrong
-                callback('failure: initialise relays reported exception {0}'.format(e))
+                self.__callback('failure: initialise relays reported exception {0}'.format(e))
                 break
         
     def __send(self, command):
