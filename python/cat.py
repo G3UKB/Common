@@ -957,7 +957,7 @@ CAT_SETTINGS = {
 	],
 	SERIAL: [
 		#com port, baud rate
-		'COM9', 4800
+		'/dev/ttyACM0', 4800
 	],
 	SELECT: CAT_SERIAL #CAT_UDP | CAT_SERIAL
 }
