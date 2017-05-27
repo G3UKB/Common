@@ -228,35 +228,42 @@ class ControllerAPI:
         if response:
             self.__doReceive(sync)
     
-    def move(self, extension, sync=True, response=True):        
+    def move(self, args, sync=True, response=True):        
         """
         Move to the given extension value
         
         Arguments:
-            extension     --  extension % to move to
+            args     --  (extension or raw value, True|False)
         """
        
         if not self.__online:
             self.__respCallback('offline!')
             return
         
-        self.__send(str(extension) + 'm')
+        extensionOrRaw, extension = args
+        if extension:
+            self.__send(str(extensionOrRaw) + 'm')
+        else:
+            self.__send(str(extensionOrRaw) + 'n')
         if response:
             self.__doReceive(sync)
     
-    def nudge(self, extension, sync=True, response=True):        
+    def nudge(self, direction, sync=True, response=True):        
         """
-        Move to the given relative extension value
+        Nudge in the given direction
         
         Arguments:
-            extension     --  extension % relative to move to
+            direction     --  FORWARD|REVERSE
         """
         
         if not self.__online:
             self.__respCallback('offline!')
             return
         
-        self.__send(str(extension) + 'n')
+        if direction == FORWARD:
+            self.__send('nudgefwd')
+        else:
+            self.__send('nudgerev')
         if response:
             self.__doReceive(sync)
 
