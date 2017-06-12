@@ -248,22 +248,33 @@ class ControllerAPI:
         if response:
             self.__doReceive(sync)
     
-    def nudge(self, direction, sync=True, response=True):        
+    def nudge(self, args, sync=True, response=True):        
         """
         Nudge in the given direction
         
         Arguments:
-            direction     --  FORWARD|REVERSE
+            args
+                direction   --  FORWARD|REVERSE
+                value       --  %.% to nudge
+                min         --  min analog setting
+                max         --  max analog setting
         """
         
         if not self.__online:
             self.__respCallback('offline!')
             return
         
+        direction, value, minAnalog, maxAnalog = args
+        # Convert the % to an analog value.
+        analogValue = int(round(float(maxAnalog - minAnalog) * (value/100.0)))
+        if analogValue == 0:
+            self.__respCallback('nudge calculated analog value 0!')
+            return
+        
         if direction == FORWARD:
-            self.__send('nudgefwd')
+            self.__send(str(analogValue) + 'f')
         else:
-            self.__send('nudgerev')
+            self.__send(str(analogValue) + 'r')
         if response:
             self.__doReceive(sync)
 
