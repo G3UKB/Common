@@ -126,3 +126,8 @@ CAT_FREQ_SET = 'catfreqset'
 CAT_MODE_SET = 'catmodeset'
 CAT_FREQ_GET = 'catfreqget'
 CAT_MODE_GET = 'catmodeget'
+
+# ============================================================================
+# Loop actuator definitions
+FORWARD = 'forward'
+REVERSE = 'reverse'
