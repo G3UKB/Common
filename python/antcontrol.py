@@ -121,18 +121,14 @@ class AntControl :
             self.__callback('failure: no network params!')
             return
         
-        print('Waiting')
         self.__evnt.wait()
-        print('Waited')
         if switch_to == RELAY_ON:
             self.__send(str(relay_id) + 'e')
         else:
             self.__send(str(relay_id) + 'd')
         self.__evnt.clear()
-        print('Clear')
         self.__doReceive()
         self.__evnt.set()
-        print('Set')
     
     def reset_relays(self, ):
         """ Set all relays de-energised """
