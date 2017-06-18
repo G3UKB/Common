@@ -74,6 +74,10 @@ class AntControl :
                 # Set the relays according to the state
                 if self.__relay_state != None:
                     self.__init_relays()
+                    
+        # Sync event
+        self.__evnt = threading.Event()
+        self.__evnt.set()
 
     # API =============================================================================================================           
     def resetParams(self, ip, port, relay_state = None):
@@ -116,11 +120,19 @@ class AntControl :
         if not self.__ready:
             self.__callback('failure: no network params!')
             return
+        
+        print('Waiting')
+        self.__evnt.wait()
+        print('Waited')
         if switch_to == RELAY_ON:
             self.__send(str(relay_id) + 'e')
         else:
             self.__send(str(relay_id) + 'd')
+        self.__evnt.clear()
+        print('Clear')
         self.__doReceive()
+        self.__evnt.set()
+        print('Set')
     
     def reset_relays(self, ):
         """ Set all relays de-energised """
@@ -162,10 +174,10 @@ class AntControl :
             else:
                 self.__send(str(relay_id) + 'd')
             try:
-                sock.settimeout(5)
+                self.__sock.settimeout(5)
                 success = False
                 while(1):
-                    data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
+                    data, addr = self.__sock.recvfrom(1024) # buffer size is 1024 bytes
                     asciidata = data.decode(encoding='UTF-8')
                     if 'success' in asciidata:
                         # Continue with next relay
@@ -190,7 +202,7 @@ class AntControl :
         if self.__online:
             self.__sock.sendto(bytes(command, "utf-8"), (self.__ip, self.__port))
         
-    def __doReceive(self, wait=False):
+    def __doReceive(self, wait=True):
         
         t = threading.Thread(target=receive, args=(self.__sock, self.__callback, self.__online))
         t.start()
@@ -227,7 +239,6 @@ def receive(sock, callback, online):
         if not online:
             callback('offline: controller is not responding')
             return
-        #callback('Communicating with controller...')
         sock.settimeout(5)
         while(1):
             data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
