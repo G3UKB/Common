@@ -746,8 +746,8 @@ class ICOM:
 			
 		"""
 		
-		cmd = lookup[COMMANDS][MULTIFUNC_CMD]
-		sub_cmd = lookup[COMMANDS][MULTIFUNC_SUB]
+		cmd = lookup[COMMANDS][TRANCEIVE_STATUS_CMD]
+		sub_cmd = lookup[COMMANDS][TRANCEIVE_STATUS_SUB]
 		if state:
 			# Set PTT on
 			data = lookup[COMMANDS][PTT_ON]
@@ -913,9 +913,9 @@ CAT_COMMAND_SETS = {
 			LOCK_SUB: bytearray([0x05, 0x00, 0x14]),
 			LOCK_ON: bytearray([0x01, ]),
 			LOCK_OFF: bytearray([0x00, ]),
-			MULTIFUNC_CMD: bytearray([0x1A, ]),
-			MULTIFUNC_SUB: bytearray([0x05, 0x00, 0x37]),
-			PTT_ON: bytearray([0x22, ]),
+			TRANCEIVE_STATUS_CMD: bytearray([0x1C, ]),
+			TRANCEIVE_STATUS_SUB: bytearray([0x00, ]),
+			PTT_ON: bytearray([0x01, ]),
 			PTT_OFF: bytearray([0x00, ]),			
 			SET_FREQ_CMD: bytearray([0x00, ]),
 			SET_FREQ_SUB: bytearray([]),
@@ -957,7 +957,8 @@ CAT_SETTINGS = {
 	],
 	SERIAL: [
 		#com port, baud rate
-		'/dev/ttyACM0', 4800
+		#'/dev/ttyACM0', 4800
+		'/dev/ttyUSB0', 19200
 	],
 	SELECT: CAT_SERIAL #CAT_UDP | CAT_SERIAL
 }
@@ -974,8 +975,8 @@ def main():
 		cat = CAT(IC7100, CAT_SETTINGS)
 		cat.set_callback(callback)
 		cat.start_thrd()
-		cat.do_command(CAT_FREQ_SET, 3.7)
-		sleep(1)
+		#cat.do_command(CAT_FREQ_SET, 3.7)
+		#sleep(1)
 		#cat.do_command(CAT_FREQ_GET)
 		#sleep(1)
 		#cat.do_command(CAT_MODE_SET, MODE_AM)
@@ -984,10 +985,10 @@ def main():
 		#sleep(1)
 		#cat.do_command(CAT_LOCK, False)
 		#sleep(1)
-		#cat.do_command(CAT_PTT, True)
-		#sleep(1)
-		#cat.do_command(CAT_PTT, False)
-		#sleep(1)
+		cat.do_command(CAT_PTT, True)
+		sleep(5.0)
+		cat.do_command(CAT_PTT, False)
+		sleep(5.0)
 		#cat.do_command(CAT_LOCK, True)
 		cat.terminate()
 		
