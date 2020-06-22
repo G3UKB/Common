@@ -120,15 +120,16 @@ class AntControl :
         if not self.__ready:
             self.__callback('failure: no network params!')
             return
-        
-        self.__evnt.wait()
-        if switch_to == RELAY_ON:
-            self.__send(str(relay_id) + 'e')
+        if self.__online:
+            self.__evnt.wait()
+            if switch_to == RELAY_ON:
+                self.__send(str(relay_id) + 'e')
+            else:
+                self.__send(str(relay_id) + 'd')
+            self.__evnt.clear()
+            self.__evnt.set()
         else:
-            self.__send(str(relay_id) + 'd')
-        self.__evnt.clear()
-        self.__doReceive()
-        self.__evnt.set()
+            self.__callback('failure: offline!')
     
     def reset_relays(self, ):
         """ Set all relays de-energised """
@@ -147,76 +148,46 @@ class AntControl :
         """
         
         if self.__ready:
-            if self.__online:
-                return True
-            else:
-                if self.__ping():
+            if self.__ping():
+                if not self.__online:
+                    # Moved to online state
                     self.__online = True
                     if relay_state != None:
                         self.__relay_state = relay_state
                         self.__init_relays()
-                    return True
-                else:
-                    return False        
+                return True
+            else:
+                # Now, or still offline
+                self.__online = False
+                return False        
         else:
+            # Not initialised
             return False
         
     # Helpers =========================================================================================================    
+    # Init to current state
     def __init_relays(self):
        
-       for relay_id, state in self.__relay_state.items():
+        for relay_id, state in self.__relay_state.items():
             if state == RELAY_ON:
                 self.__send(str(relay_id) + 'e')
             else:
                 self.__send(str(relay_id) + 'd')
-            try:
-                self.__sock.settimeout(5)
-                success = False
-                while(1):
-                    data, addr = self.__sock.recvfrom(1024) # buffer size is 1024 bytes
-                    asciidata = data.decode(encoding='UTF-8')
-                    if 'success' in asciidata:
-                        # Continue with next relay
-                        success = True
-                        break
-                    elif 'failure' in asciidata:
-                        #oops
-                        self.__callback('failure: initialise relays reported failure!')
-                        break
-                if success: continue    
-            except socket.timeout:
-                # Server didn't respond
-                self.__callback('failure: initialise relays reported timeout on read!')
-                break
-            except Exception as e:
-                # Something went wrong
-                self.__callback('failure: initialise relays reported exception {0}'.format(e))
-                break
-        
+            
+    # Send relay command    
     def __send(self, command):
         
-        if self.__online:
-            self.__sock.sendto(bytes(command, "utf-8"), (self.__ip, self.__port))
-        
-    def __doReceive(self, wait=True):
-        
-        t = threading.Thread(target=receive, args=(self.__sock, self.__callback, self.__online))
-        t.start()
-        if wait:
-            t.join()
-
+        self.__sock.sendto(bytes(command, "utf-8"), (self.__ip, self.__port))
+    
+    # Do a ping exchange
     def __ping(self):
-        """
-        Check connectivity
-        
-        """
         
         if not self.__ready:
             return False
         
         try:
             self.__sock.sendto(bytes('ping', "utf-8"), (self.__ip, self.__port))
-            self.__sock.settimeout(0.5)
+            self.__sock.settimeout(2.0)
             data, addr = self.__sock.recvfrom(1024) # buffer size is 1024 bytes
             return True
         except socket.timeout:
@@ -225,28 +196,4 @@ class AntControl :
         except Exception as e:
             # Something went wrong
             return False
-        
-# Receive loop ========================================================================================================        
-# Runs on separate thread as calls are from within a UI event proc so need to detach the long running part and
-# also allow the UI to continue to display status changes.
-def receive(sock, callback, online):
-        
-    try:
-        if not online:
-            callback('offline: controller is not responding')
-            return
-        sock.settimeout(5)
-        while(1):
-            data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
-            asciidata = data.decode(encoding='UTF-8')
-            callback(asciidata)
-            if 'success' in asciidata or 'failure' in asciidata :
-                # All done so exit thread
-                break
-    except socket.timeout:
-        # Server didn't respond
-        callback('failure: timeout on read!')
-    except Exception as e:
-        # Something went wrong
-        callback('failure: {0}'.format(e))
         
