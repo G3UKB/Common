@@ -173,17 +173,26 @@ class AntControl :
         if not self.__ready:
             return False
         
-        try:
-            self.__sock.sendto(bytes('ping', "utf-8"), (self.__ip, self.__port))
-            self.__sock.settimeout(1.0)
-            data, addr = self.__sock.recvfrom(5) # buffer size is 1024 bytes
-            return True
-        except socket.timeout:
-            # Server didn't respond
-            return False
-        except Exception as e:
-            # Something went wrong
-            return False
+        try_count = 5
+        r = False
+        while True:
+            try:
+                self.__sock.sendto(bytes('ping', "utf-8"), (self.__ip, self.__port))
+                self.__sock.settimeout(1.0)
+                data, addr = self.__sock.recvfrom(5) # buffer size is 1024 bytes
+                r = True
+                break
+            except socket.timeout:
+                # Server didn't respond
+                if try_count > 0:
+                    try_count -= 1
+                    continue
+                else:
+                    break
+            except Exception as e:
+                # Something went wrong
+                break
+        return r
         
 #=========================================================================================================
 # Health monitor
