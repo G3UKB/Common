@@ -99,7 +99,7 @@ class AntControl :
         """
         
         if not self.__ready:
-            self.__callback('failure: no network params!')
+            self.__callback(False, 'failure: no network params!')
             return
         if self.__online:
             self.__sem.acquire()
@@ -109,7 +109,7 @@ class AntControl :
                 self.__send(str(relay_id) + 'd')
             self.__sem.release()
         else:
-            self.__callback('failure: offline!')
+            self.__callback(False, 'failure: offline!')
     
     def reset_relays(self, ):
         """ Set all relays de-energised """
@@ -139,15 +139,15 @@ class AntControl :
                     if relay_state != None:
                         self.__relay_state = relay_state
                         self.__init_relays()
-                self.__callback(ONLINE)
+                self.__callback(ONLINE, '')
             else:
                 # Now, or still offline
                 self.__online = False
-                self.__callback(OFFLINE)
+                self.__callback(OFFLINE, '')
             self.__sem.release()
         else:
             # Not initialised
-            self.__callback(OFFLINE)
+            self.__callback(OFFLINE, '')
         
     # Helpers =========================================================================================================    
     # Init to current state
@@ -175,8 +175,8 @@ class AntControl :
         
         try:
             self.__sock.sendto(bytes('ping', "utf-8"), (self.__ip, self.__port))
-            self.__sock.settimeout(0.5)
-            data, addr = self.__sock.recvfrom(1024) # buffer size is 1024 bytes
+            self.__sock.settimeout(1.0)
+            data, addr = self.__sock.recvfrom(5) # buffer size is 1024 bytes
             return True
         except socket.timeout:
             # Server didn't respond
@@ -212,7 +212,7 @@ class MonitorThrd (threading.Thread):
         # Check status every 0.5 seconds
         while not self.__terminate:
             self.__check_status()
-            sleep(0.5)
+            sleep(1.0)
             
         print("Monitor thread exiting...")
     
