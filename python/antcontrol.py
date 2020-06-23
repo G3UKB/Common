@@ -74,43 +74,21 @@ class AntControl :
                 # Set the relays according to the state
                 if self.__relay_state != None:
                     self.__init_relays()
-                    
-        # Sync event
-        self.__evnt = threading.Event()
-        self.__evnt.set()
+        
+        # Mutual exclusion
+        self.__sem = threading.Semaphore()
+        
+        # Start the monitor thread
+        self.__monitor_thrd = MonitorThread(self.is_online)
+        self.__monitor_thrd.start()
 
     # API =============================================================================================================           
-    def resetParams(self, ip, port, relay_state = None):
-        """
-        Parameters (may) have changed
-        
-        Arguments:
-        
-            ip          --  IP address of Arduino
-            port        --  port address for Arduino
-            relay_state --  current relay state
-            
-        """
-        
-        self.__ip = ip
-        self.__port = int(port)
-        self.__ready = True
-        if self.__sock != None:
-           self.__sock.close()
-        # Create UDP socket
-        self.__sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        # Set the relays according to the state
-        if self.__ping():
-            self.__online = True
-            if relay_state != None:
-                self.__relay_state = relay_state
-                for relay_id, state in self.__relay_state.items():
-                    self.set_relay(relay_id, state)
+    def terminate(self):
+        self.__monitor_thrd.terminate();
+        self.__monitor_thrd.join()
     
     def set_relay(self, relay_id, switch_to):
         """
-        Parameters (may) have changed
-        
         Arguments:
         
             relay_id    --  1-6
@@ -121,13 +99,12 @@ class AntControl :
             self.__callback('failure: no network params!')
             return
         if self.__online:
-            self.__evnt.wait()
+            self.__sem.acquire()
             if switch_to == RELAY_ON:
                 self.__send(str(relay_id) + 'e')
             else:
                 self.__send(str(relay_id) + 'd')
-            self.__evnt.clear()
-            self.__evnt.set()
+            self.__sem.release()
         else:
             self.__callback('failure: offline!')
     
@@ -135,8 +112,10 @@ class AntControl :
         """ Set all relays de-energised """
         
         if self.__ready:
+            self.__sem.acquire()
             for relay_id in range(1,7):
                 self.set_relay(relay_id, RELAY_OFF)
+            self.__sem.release()
     
     def is_online(self, relay_state):
         """
@@ -148,6 +127,7 @@ class AntControl :
         """
         
         if self.__ready:
+            self.__sem.acquire()
             if self.__ping():
                 if not self.__online:
                     # Moved to online state
@@ -155,14 +135,15 @@ class AntControl :
                     if relay_state != None:
                         self.__relay_state = relay_state
                         self.__init_relays()
-                return True
+                self.__callback(ONLINE)
             else:
                 # Now, or still offline
                 self.__online = False
-                return False        
+                self.__callback(OFFLINE)
+            self.__sem.release()
         else:
             # Not initialised
-            return False
+            self.__callback(OFFLINE)
         
     # Helpers =========================================================================================================    
     # Init to current state
@@ -178,22 +159,35 @@ class AntControl :
     def __send(self, command):
         
         self.__sock.sendto(bytes(command, "utf-8"), (self.__ip, self.__port))
+
+#=========================================================================================================
+# Health monitor
+class MonitorThrd (threading.Thread):
     
-    # Do a ping exchange
-    def __ping(self):
+    def __init__(self, check_status):
+        """
+        Constructor
         
-        if not self.__ready:
-            return False
+        Arguments
+            check_status    -- callback here to update status
+        """
+
+        super(MonitorThrd, self).__init__()
         
-        try:
-            self.__sock.sendto(bytes('ping', "utf-8"), (self.__ip, self.__port))
-            self.__sock.settimeout(2.0)
-            data, addr = self.__sock.recvfrom(1024) # buffer size is 1024 bytes
-            return True
-        except socket.timeout:
-            # Server didn't respond
-            return False
-        except Exception as e:
-            # Something went wrong
-            return False
+        self.__check_status = check_status
+        self.__terminate = False
+        self.__state = OFFLINE
+    
+    def terminate(self):
+        """ Terminate thread """
         
+        self.__terminate = True
+        
+    def run(self):
+        # Check status every 0.5 seconds
+        while not self.__terminate:
+            self.__check_status()
+            sleep(0.5)
+            
+        print("Monitor thread exiting...")
+    
