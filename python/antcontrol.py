@@ -27,6 +27,7 @@
 import socket
 import threading
 import traceback
+from time import sleep
 
 # Application imports
 from commondefs import *
@@ -36,7 +37,7 @@ Controller API
 """
 class AntControl :
     
-    def __init__(self, network_params, relay_state, callback):
+    def __init__(self, network_params, relay_state, callback, get_state):
         """
         Constructor
         
@@ -59,6 +60,8 @@ class AntControl :
         
         # Callback here with progress, SWR, completion etc
         self.__callback = callback
+        # Returns current relay state
+        self.__get_state = get_state
         # Current state of relays
         self.__relay_state = relay_state
         # Socket
@@ -79,7 +82,7 @@ class AntControl :
         self.__sem = threading.Semaphore()
         
         # Start the monitor thread
-        self.__monitor_thrd = MonitorThread(self.is_online)
+        self.__monitor_thrd = MonitorThrd(self.is_online)
         self.__monitor_thrd.start()
 
     # API =============================================================================================================           
@@ -117,7 +120,7 @@ class AntControl :
                 self.set_relay(relay_id, RELAY_OFF)
             self.__sem.release()
     
-    def is_online(self, relay_state):
+    def is_online(self):
         """
         If offline try and get up online, return online state
         
@@ -128,6 +131,7 @@ class AntControl :
         
         if self.__ready:
             self.__sem.acquire()
+            relay_state = self.__get_state()
             if self.__ping():
                 if not self.__online:
                     # Moved to online state
@@ -160,6 +164,27 @@ class AntControl :
         
         self.__sock.sendto(bytes(command, "utf-8"), (self.__ip, self.__port))
 
+    def __ping(self):
+        """
+        Check connectivity
+        
+        """
+        
+        if not self.__ready:
+            return False
+        
+        try:
+            self.__sock.sendto(bytes('ping', "utf-8"), (self.__ip, self.__port))
+            self.__sock.settimeout(0.5)
+            data, addr = self.__sock.recvfrom(1024) # buffer size is 1024 bytes
+            return True
+        except socket.timeout:
+            # Server didn't respond
+            return False
+        except Exception as e:
+            # Something went wrong
+            return False
+        
 #=========================================================================================================
 # Health monitor
 class MonitorThrd (threading.Thread):

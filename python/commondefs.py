@@ -25,6 +25,8 @@
 
 # ============================================================================
 # Antenna Control
+ONLINE = True
+OFFLINE = False
 
 RELAY_OFF = 'relayoff'
 RELAY_ON = 'relayon'
