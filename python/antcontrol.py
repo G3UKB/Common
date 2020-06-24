@@ -253,7 +253,7 @@ class MonitorThrd (threading.Thread):
     def run(self):
         # Check status every 0.5 seconds
         while not self.__terminate:
-            #self.__check_status()
+            self.__check_status()
             sleep(1.0)
             
         print("Monitor thread exiting...")
