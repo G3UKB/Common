@@ -110,12 +110,14 @@ class AntControl :
         # Create UDP socket
         self.__sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         # Set the relays according to the state
+        self.__sem.acquire()
         if self.__ping():
             self.__online = True
             if relay_state != None:
                 self.__relay_state = relay_state
                 for relay_id, state in self.__relay_state.items():
                     self.set_relay(relay_id, state)
+        self.__sem.release()
                     
     def set_relay(self, relay_id, switch_to):
         """
@@ -131,9 +133,11 @@ class AntControl :
         if self.__online:
             self.__sem.acquire()
             if switch_to == RELAY_ON:
-                self.__send(str(relay_id) + 'e')
+                if not self.__send(str(relay_id) + 'e', 10, 5, 0.5):
+                    self.__callback(False, 'failure: no response!')
             else:
-                self.__send(str(relay_id) + 'd')
+                if not self.__send(str(relay_id) + 'd', 10, 5, 0.5):
+                    self.__callback(False, 'failure: no response!')
             self.__sem.release()
         else:
             self.__callback(False, 'failure: offline!')
@@ -143,7 +147,7 @@ class AntControl :
         
         if self.__ready:
             self.__sem.acquire()
-            for relay_id in range(1,7):
+            for relay_id in range(1,16):
                 self.set_relay(relay_id, RELAY_OFF)
             self.__sem.release()
     
@@ -182,15 +186,12 @@ class AntControl :
        
         for relay_id, state in self.__relay_state.items():
             if state == RELAY_ON:
-                self.__send(str(relay_id) + 'e')
+                if not self.__send(str(relay_id) + 'e', 5, 5, 0.2):
+                    self.__callback(False, 'failure: no response!')
             else:
-                self.__send(str(relay_id) + 'd')
+                if not self.__send(str(relay_id) + 'd', 5, 5, 0.2):
+                    self.__callback(False, 'failure: no response!')
             
-    # Send relay command    
-    def __send(self, command):
-        
-        self.__sock.sendto(bytes(command, "utf-8"), (self.__ip, self.__port))
-
     def __ping(self):
         """
         Check connectivity
@@ -200,19 +201,24 @@ class AntControl :
         if not self.__ready:
             return False
         
-        try_count = 5
+        return self.__send('ping', 5, 5, 1.0)
+    
+    # Send relay command    
+    def __send(self, command, retries, length, timeout):
+        
+        count = retries
         r = False
         while True:
             try:
-                self.__sock.sendto(bytes('ping', "utf-8"), (self.__ip, self.__port))
-                self.__sock.settimeout(1.0)
-                data, addr = self.__sock.recvfrom(5) # buffer size is 1024 bytes
+                self.__sock.sendto(bytes(command, "utf-8"), (self.__ip, self.__port))
+                self.__sock.settimeout(timeout)
+                data, addr = self.__sock.recvfrom(length) # buffer size is 1024 bytes
                 r = True
                 break
             except socket.timeout:
                 # Server didn't respond
-                if try_count > 0:
-                    try_count -= 1
+                if count > 0:
+                    count -= 1
                     continue
                 else:
                     break
@@ -247,7 +253,7 @@ class MonitorThrd (threading.Thread):
     def run(self):
         # Check status every 0.5 seconds
         while not self.__terminate:
-            self.__check_status()
+            #self.__check_status()
             sleep(1.0)
             
         print("Monitor thread exiting...")
