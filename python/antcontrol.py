@@ -90,6 +90,33 @@ class AntControl :
         self.__monitor_thrd.terminate();
         self.__monitor_thrd.join()
     
+    def resetParams(self, ip, port, relay_state = None):
+        """
+        Parameters (may) have changed
+        
+        Arguments:
+        
+            ip          --  IP address of Arduino
+            port        --  port address for Arduino
+            relay_state --  current relay state
+            
+        """
+        
+        self.__ip = ip
+        self.__port = int(port)
+        self.__ready = True
+        if self.__sock != None:
+           self.__sock.close()
+        # Create UDP socket
+        self.__sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        # Set the relays according to the state
+        if self.__ping():
+            self.__online = True
+            if relay_state != None:
+                self.__relay_state = relay_state
+                for relay_id, state in self.__relay_state.items():
+                    self.set_relay(relay_id, state)
+                    
     def set_relay(self, relay_id, switch_to):
         """
         Arguments:
