@@ -24,7 +24,7 @@
 #
 
 # System imports
-import os
+import os, sys
 import subprocess
 from time import sleep
 import traceback
@@ -125,8 +125,8 @@ class VAC:
         self.__vacInst_0 = subprocess.Popen(self.__vac_0, stdout=subprocess.PIPE)
         self.__vacInst_1 = subprocess.Popen(self.__vac_1, stdout=subprocess.PIPE)
         # Read device ID's
-        self.__vacid_0 = self.__vacInst_1.stdout.read().decode('utf_8').strip()
-        self.__vacid_1 = self.__vacInst_2.stdout.read().decode('utf_8').strip()
+        self.__vacid_0 = self.__vacInst_0.stdout.read().decode('utf_8').strip()
+        self.__vacid_1 = self.__vacInst_1.stdout.read().decode('utf_8').strip()
         return self.__vacid_0,self.__vacid_1
     
     """
@@ -146,7 +146,7 @@ def tidyExit(signal, frame):
     try:
         vt.destroy()
         vac.destroy()
-        print("Virtual devices destroyed")
+        print("/nVirtual devices destroyed.")
     except Exception as e:
         print ('Exception on exit [%s][%s]' % (str(e), traceback.format_exc()))
     sys.exit(0)
@@ -168,6 +168,8 @@ def main():
         
         # Wait for termination
         signal.signal(signal.SIGINT, tidyExit)
+        print("Ctrl+C to exit")
+        signal.pause()
         
     except Exception as e:
         print ('Exception on create [%s][%s]' % (str(e), traceback.format_exc()))
