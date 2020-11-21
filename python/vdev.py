@@ -164,7 +164,10 @@ def main():
         vacid_0, vacid_1 = vac.create()
         # Output messages
         print("Created virtual serial ports: %s, %s" % (vterm_0, vterm_1))
+        print("%s - CAT application, %s - serial client" % (vterm_0, vterm_1))
         print("Created virtual audio cables: VAC_1to2 [%s], VAC_2to1 [%s]" % (vacid_0, vacid_1))
+        print("VAC_2to1.monitor - app1 input, VAC_1to2 - app1 output")
+        print("VAC_1to2.monitor - app2 input, VAC_2to1 - app2 output")
         
         # Wait for termination
         signal.signal(signal.SIGINT, tidyExit)
