@@ -146,7 +146,7 @@ def tidyExit(signal, frame):
     try:
         vt.destroy()
         vac.destroy()
-        print("/nVirtual devices destroyed.")
+        print("\nVirtual devices destroyed.")
     except Exception as e:
         print ('Exception on exit [%s][%s]' % (str(e), traceback.format_exc()))
     sys.exit(0)
