@@ -87,6 +87,7 @@ class VTerm:
         except:
             pass
         self.__vtermInst = subprocess.Popen(self.__vterm)
+        sleep(1)
         # Open log file and extract device names
         f = open('log.txt')
         d = f.read()
