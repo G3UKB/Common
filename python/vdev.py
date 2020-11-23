@@ -82,6 +82,10 @@ class VTerm:
     """
     def create(self):
         # Run process
+        try:
+            os.remove('log.txt')
+        except:
+            pass
         self.__vtermInst = subprocess.Popen(self.__vterm)
         # Open log file and extract device names
         f = open('log.txt')
